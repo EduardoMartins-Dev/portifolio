@@ -249,13 +249,13 @@ function initBackToTop() {
 }
 
 /* ----------------------------------------------------------------
-   CONTACT FORM (Demo)
+   CONTACT FORM (Formspree)
    ---------------------------------------------------------------- */
 function initContactForm() {
   const form = document.getElementById('contactForm');
   if (!form) return;
 
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
 
     const name = form.querySelector('#formName').value.trim();
@@ -267,16 +267,37 @@ function initContactForm() {
     const btn = form.querySelector('button[type="submit"]');
     const originalText = btn.innerHTML;
 
-    btn.innerHTML = '<i class="fas fa-check"></i> Mensagem Enviada!';
-    btn.style.background = 'var(--accent-secondary)';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
     btn.disabled = true;
 
-    setTimeout(() => {
-      btn.innerHTML = originalText;
-      btn.style.background = '';
-      btn.disabled = false;
-      form.reset();
-    }, 3000);
+    try {
+      const res = await fetch('https://formspree.io/f/mzdkdeqq', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form)
+      });
+
+      if (res.ok) {
+        btn.innerHTML = '<i class="fas fa-check"></i> Mensagem Enviada!';
+        btn.style.background = 'var(--accent-secondary)';
+        form.reset();
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.background = '';
+          btn.disabled = false;
+        }, 3000);
+      } else {
+        throw new Error('Erro no envio');
+      }
+    } catch {
+      btn.innerHTML = '<i class="fas fa-times"></i> Erro ao enviar';
+      btn.style.background = '#e74c3c';
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 3000);
+    }
   });
 }
 
