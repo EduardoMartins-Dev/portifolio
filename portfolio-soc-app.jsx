@@ -350,7 +350,7 @@ function TweaksPanel({ tweaks, update, onClose }) {
         .tw-toggle input { accent-color: var(--accent);}
       `}</style>
       <div className="tw-head">
-        <span>TWEAKS</span>
+        <span>THEME · CONFIG</span>
         <button onClick={onClose} aria-label="Close">×</button>
       </div>
       <div className="tw-body">
@@ -1123,26 +1123,46 @@ function SOCHome({ accent = "#ff3b30", density = "comfortable", animations = tru
   );
 }
 
-// ============ App + Tweaks wiring ============
-function App() {
-  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
-  const [editMode, setEditMode] = useState(false);
+// ============ App + Theme switcher (public + editor) ============
+const LS_KEY = "emb-soc-theme";
 
+function loadTheme() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_KEY) || "null");
+    if (saved && typeof saved === "object") return { ...TWEAK_DEFAULTS, ...saved };
+  } catch (e) {}
+  return TWEAK_DEFAULTS;
+}
+
+function App() {
+  const [tweaks, setTweaks] = useState(loadTheme);
+  const [open, setOpen] = useState(false);
+  const [inEditor, setInEditor] = useState(false);
+
+  // Editor protocol — keeps in-editor sync working too
   useEffect(() => {
     const onMsg = (e) => {
       const d = e.data;
       if (!d || typeof d !== "object") return;
-      if (d.type === "__activate_edit_mode") setEditMode(true);
-      if (d.type === "__deactivate_edit_mode") setEditMode(false);
+      if (d.type === "__activate_edit_mode") { setOpen(true); setInEditor(true); }
+      if (d.type === "__deactivate_edit_mode") { setOpen(false); setInEditor(false); }
     };
     window.addEventListener("message", onMsg);
-    window.parent.postMessage({ type: "__edit_mode_available" }, "*");
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "__edit_mode_available" }, "*");
+    }
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
   const update = (patch) => {
-    setTweaks(t => ({ ...t, ...patch }));
-    window.parent.postMessage({ type: "__edit_mode_set_keys", edits: patch }, "*");
+    setTweaks(t => {
+      const next = { ...t, ...patch };
+      try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch (e) {}
+      return next;
+    });
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "__edit_mode_set_keys", edits: patch }, "*");
+    }
   };
 
   return (
@@ -1152,13 +1172,38 @@ function App() {
         density={tweaks.density}
         animations={tweaks.animations !== false}
       />
-      {editMode && (
+
+      {/* Floating theme button — always visible on public site */}
+      {!open && (
+        <button
+          aria-label="Theme"
+          onClick={() => setOpen(true)}
+          style={{
+            position: "fixed", right: 20, bottom: 20, zIndex: 9998,
+            width: 44, height: 44,
+            background: "#0f1115", color: tweaks.accent,
+            border: `1px solid ${tweaks.accent}`,
+            cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 18, fontWeight: 700,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+            transition: "transform .15s ease",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.08)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}>
+          ◐
+        </button>
+      )}
+
+      {open && (
         <TweaksPanel
           tweaks={tweaks}
           update={update}
           onClose={() => {
-            setEditMode(false);
-            window.parent.postMessage({ type: "__edit_mode_dismissed"}, "*");
+            setOpen(false);
+            if (inEditor) {
+              window.parent.postMessage({ type: "__edit_mode_dismissed"}, "*");
+            }
           }}
         />
       )}
