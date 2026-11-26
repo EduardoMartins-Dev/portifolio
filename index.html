@@ -1,22 +1,394 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Eduardo Martins Barbosa — SOC Console</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eduardo Martins Barbosa — Infraestrutura & Segurança</title>
+<meta name="description" content="Portfólio de Eduardo Martins Barbosa: infraestrutura, IAM, monitoramento e cibersegurança.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  html, body, #root { margin: 0; padding: 0; background: #0a0b0d; min-height: 100vh; }
-  body { font-family: 'Inter', system-ui, sans-serif; }
+  :root {
+    --bg: #ffffff;
+    --surface: #f6f7f9;
+    --text: #111318;
+    --muted: #5b6270;
+    --line: #e4e6eb;
+    --accent: #1f5fd6;
+    --accent-soft: #e9f0fd;
+    --ok: #1a7f4b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1014;
+      --surface: #161920;
+      --text: #e8eaef;
+      --muted: #9aa1ae;
+      --line: #262a33;
+      --accent: #6b9cff;
+      --accent-soft: #1a2438;
+      --ok: #4cc38a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.6 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+
+  /* Nav */
+  header.nav {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  header.nav .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; gap: 16px; }
+  .brand { font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+  nav.links { display: flex; gap: 20px; font-size: 14px; overflow-x: auto; }
+  nav.links a { color: var(--muted); white-space: nowrap; }
+  nav.links a:hover { color: var(--text); text-decoration: none; }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: 120px 1fr; gap: 28px; align-items: center; padding: 72px 0 56px; }
+  .hero img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line); }
+  .hero h1 { font-size: 40px; line-height: 1.1; letter-spacing: -0.03em; margin: 0 0 8px; }
+  .hero .role { font-size: 18px; color: var(--muted); margin: 0 0 16px; }
+  .status { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  .hero .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .btn {
+    display: inline-block; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500;
+    border: 1px solid var(--line); color: var(--text); background: var(--bg);
+  }
+  .btn:hover { border-color: var(--accent); text-decoration: none; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn.primary { color: #0e1014; } }
+
+  /* Sections */
+  section { padding: 48px 0; border-top: 1px solid var(--line); }
+  section h2 {
+    font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin: 0 0 24px;
+  }
+  .lead { font-size: 17px; margin: 0; }
+  .lead + .lead { margin-top: 12px; }
+
+  /* Highlights */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; }
+  .stat { background: var(--surface); border-radius: 10px; padding: 16px; }
+  .stat b { display: block; font-size: 24px; letter-spacing: -0.02em; }
+  .stat span { font-size: 13px; color: var(--muted); }
+
+  /* Timeline */
+  .job { display: grid; grid-template-columns: 160px 1fr; gap: 20px; padding: 18px 0; }
+  .job + .job { border-top: 1px dashed var(--line); }
+  .job .when { font-size: 14px; color: var(--muted); }
+  .job h3 { margin: 0; font-size: 17px; }
+  .job .org { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  .job ul { margin: 0; padding-left: 18px; color: var(--text); font-size: 15px; }
+  .job li { margin: 4px 0; }
+  .tag-now { font-size: 11px; font-weight: 600; color: var(--ok); margin-left: 6px; }
+
+  /* Certifications */
+  .cert-group { margin-bottom: 28px; }
+  .cert-group:last-child { margin-bottom: 0; }
+  .cert-group h3 { font-size: 15px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .cert-group h3 small { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .certs { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .cert {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .cert .name { font-weight: 500; font-size: 15px; line-height: 1.35; }
+  .cert .date { font-size: 13px; color: var(--muted); }
+  .cert.featured { border-color: var(--accent); background: var(--accent-soft); }
+
+  /* Projects */
+  .projects { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .project {
+    border: 1px solid var(--line); border-radius: 12px; padding: 20px;
+    display: flex; flex-direction: column;
+  }
+  .project.wide { grid-column: 1 / -1; }
+  .project h3 { margin: 0 0 4px; font-size: 18px; }
+  .project .sub { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+  .project p { margin: 0 0 14px; font-size: 15px; }
+  .project img { width: 100%; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 14px; }
+  .nta-more { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: -4px 0 14px; }
+  .nta-more a { display: block; color: var(--muted); font-size: 13px; }
+  .nta-more img { aspect-ratio: 16 / 9; object-fit: cover; object-position: top; margin-bottom: 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+  .chip {
+    font: 12px/1 'JetBrains Mono', monospace; padding: 5px 8px; border-radius: 6px;
+    background: var(--surface); color: var(--muted);
+  }
+  .project .repo { margin-top: 14px; font-size: 14px; }
+
+  /* Skills */
+  .skills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 32px; }
+  .skills h3 { font-size: 15px; margin: 0 0 8px; }
+
+  /* CTF */
+  .ctf { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
+  .ctf .rank { font-size: 44px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .ctf .rank small { font-size: 16px; color: var(--muted); font-weight: 400; }
+  .ctf .meta { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .shots img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+
+  /* Contact */
+  .contact-list { display: flex; flex-direction: column; gap: 6px; font-size: 16px; }
+  footer { padding: 32px 0 48px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 720px) {
+    nav.links { display: none; }
+    .hero { grid-template-columns: 1fr; gap: 20px; padding: 48px 0 40px; }
+    .hero img { width: 96px; height: 96px; }
+    .hero h1 { font-size: 32px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .job { grid-template-columns: 1fr; gap: 4px; }
+    .projects, .skills, .ctf { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script type="text/babel" src="portfolio-soc-app.jsx"></script>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top">Eduardo Martins</a>
+    <nav class="links">
+      <a href="#sobre">Sobre</a>
+      <a href="#experiencia">Experiência</a>
+      <a href="#certificacoes">Certificações</a>
+      <a href="#projetos">Projetos</a>
+      <a href="#competencias">Competências</a>
+      <a href="#contato">Contato</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <div class="hero">
+    <img src="img/profile.jpeg" alt="Foto de Eduardo Martins Barbosa">
+    <div>
+      <h1>Eduardo Martins Barbosa</h1>
+      <p class="role">Infraestrutura &amp; Cibersegurança · IAM · Monitoramento</p>
+      <span class="status">Estagiário de Infraestrutura na SEG Automotive · Jundiaí, SP</span>
+      <div class="actions">
+        <a class="btn primary" href="mailto:eduardo.dev.barbosa@gmail.com">Entrar em contato</a>
+        <a class="btn" href="https://linkedin.com/in/eduardo-martins3" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://github.com/EduardoMartins-Dev" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+
+  <section id="sobre">
+    <h2>Sobre</h2>
+    <p class="lead">Estudante de Ciência da Computação com foco em infraestrutura de TI e segurança da informação. Trabalho com provisionamento e conformidade de estações, gestão de identidades (IAM), monitoramento e redes, buscando automação, confiabilidade e segurança em ambientes corporativos.</p>
+    <p class="lead">Fora do trabalho, desenvolvo um IDS em C11 do zero e participo de competições CTF.</p>
+    <div class="stats">
+      <div class="stat"><b>12</b><span>certificações</span></div>
+      <div class="stat"><b>350k+</b><span>pacotes/s no IDS próprio</span></div>
+      <div class="stat"><b>Top 24%</b><span>NahamCon CTF 2025</span></div>
+      <div class="stat"><b>3</b><span>experiências profissionais</span></div>
+    </div>
+  </section>
+
+  <section id="experiencia">
+    <h2>Experiência</h2>
+
+    <div class="job">
+      <div class="when">Ago 2026 — atual</div>
+      <div>
+        <h3>Estagiário de Infraestrutura <span class="tag-now">ATUAL</span></h3>
+        <div class="org">SEG Automotive · Itupeva, SP</div>
+        <ul>
+          <li>Provisionamento de estações via PXE, com inventário de ativos e conformidade em Matrix42 e Intune.</li>
+          <li>Suporte presencial, gestão de chamados no Matrix42 e de acessos no Active Directory.</li>
+          <li>Monitoramento com Zabbix e Grafana, incluindo coletor SNMP em Python para impressoras e dashboard SOC no Microsoft Sentinel.</li>
+          <li>Auditoria de segurança: mapeamento de ativos OT da linha de produção e solicitação de VLANs junto aos times globais.</li>
+          <li>Treinamento de segurança da informação para novos colaboradores (boas práticas e uso seguro de IA).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">Set 2025 — Jul 2026</div>
+      <div>
+        <h3>Estagiário de Suporte e Implantação</h3>
+        <div class="org">Fagron Technologies · Jundiaí, SP</div>
+        <ul>
+          <li>Gestão de identidades e acessos (IAM) no onboarding de clientes do ERP.</li>
+          <li>Resposta a incidentes via Azure DevOps: triagem, RCA e documentação.</li>
+          <li>Automação com Power Automate e PowerShell; manutenção de bancos Firebird.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="job">
+      <div class="when">Dez 2024 — Ago 2025</div>
+      <div>
+        <h3>Aprendiz — Qualidade</h3>
+        <div class="org">Plascar · Jundiaí, SP</div>
+        <ul>
+          <li>Auditoria de qualidade e análise de conformidade.</li>
+          <li>Dashboards em Excel para acompanhamento de KPIs.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="certificacoes">
+    <h2>Certificações</h2>
+
+    <div class="cert-group">
+      <h3>Cisco Networking Academy <small>2</small></h3>
+      <div class="certs">
+        <div class="cert featured"><span class="name">Junior Cybersecurity Analyst Career Path</span><span class="date">Jan 2026</span></div>
+        <div class="cert"><span class="name">Networking Devices and Initial Configuration</span><span class="date">Dez 2025</span></div>
+      </div>
+    </div>
+
+    <div class="cert-group">
+      <h3>The Linux Foundation <small>1</small></h3>
+      <div class="certs">
+        <div class="cert featured"><span class="name">LFC108: Cybersecurity Essentials</span><span class="date">2026</span></div>
+      </div>
+    </div>
+
+    <div class="cert-group">
+      <h3>Hackers Hive <small>1</small></h3>
+      <div class="certs">
+        <div class="cert featured"><span class="name">Metasploit Framework Expert</span><span class="date">Dez 2025</span></div>
+      </div>
+    </div>
+
+    <div class="cert-group">
+      <h3>IBSEC <small>4</small></h3>
+      <div class="certs">
+        <div class="cert"><span class="name">Segurança em Linux</span><span class="date">Jan 2026</span></div>
+        <div class="cert"><span class="name">Analista SOC</span><span class="date">Dez 2025</span></div>
+        <div class="cert"><span class="name">Fundamentos em Cibersegurança</span><span class="date">Dez 2025</span></div>
+        <div class="cert"><span class="name">Fundamentos em Redes</span><span class="date">Jan 2025</span></div>
+      </div>
+    </div>
+
+    <div class="cert-group">
+      <h3>Google <small>4</small></h3>
+      <div class="certs">
+        <div class="cert"><span class="name">Foundations of Cybersecurity</span><span class="date">Set 2025</span></div>
+        <div class="cert"><span class="name">Play It Safe: Manage Security Risks</span><span class="date">Jan 2025</span></div>
+        <div class="cert"><span class="name">Connect and Protect: Networks and Network Security</span><span class="date">Jan 2025</span></div>
+        <div class="cert"><span class="name">Tools of the Trade: Linux and SQL</span><span class="date">Jan 2025</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projetos">
+    <h2>Projetos</h2>
+    <div class="projects">
+      <article class="project wide">
+        <a href="img/nta/dashboard-overview.png" target="_blank" rel="noopener"><img src="img/nta/dashboard-overview.png" alt="Dashboard Grafana do NTA: tráfego, ataques detectados, mapa de origens e kill chain por IP"></a>
+        <div class="nta-more">
+          <a href="img/nta/dashboard-deteccoes.png" target="_blank" rel="noopener"><img src="img/nta/dashboard-deteccoes.png" alt="Painel de detecções e narrativas de incidente geradas por LLM"><span>Detecções e narrativas LLM</span></a>
+          <a href="img/nta/dashboard-threat-intel.png" target="_blank" rel="noopener"><img src="img/nta/dashboard-threat-intel.png" alt="Painel de threat intelligence: GeoIP, ASNs, IoC e técnicas MITRE ATT&amp;CK"><span>Threat intel · GeoIP · MITRE</span></a>
+        </div>
+        <h3>Network Traffic Analyzer</h3>
+        <div class="sub">IDS de alto desempenho em C11 · arquitetura Agent/Server · v8.1</div>
+        <p>Agentes em C capturam pacotes em modo promíscuo (libpcap/Npcap) e detectam port scans, SYN/ICMP flood, DNS tunneling, ARP spoofing e brute force com baseline EWMA adaptativo e correlação de kill chain mapeada no MITRE ATT&amp;CK. Pipeline multi-thread com ring buffers lock-free (350k+ pps), telemetria via RabbitMQ, InfluxDB e Grafana, enriquecimento com GeoIP, AbuseIPDB e WHOIS, e agente nativo como Windows Service.</p>
+        <div class="chips"><span class="chip">C11</span><span class="chip">libpcap</span><span class="chip">RabbitMQ</span><span class="chip">InfluxDB</span><span class="chip">Grafana</span><span class="chip">Docker</span><span class="chip">MITRE ATT&amp;CK</span></div>
+        <a class="repo" href="https://github.com/EduardoMartins-Dev/Network-Traffic-Analyzer" target="_blank" rel="noopener">github.com/EduardoMartins-Dev/Network-Traffic-Analyzer →</a>
+      </article>
+
+      <article class="project">
+        <h3>Quantum-Safe Scanner</h3>
+        <div class="sub">Scanner de criptografia fraca em código</div>
+        <p>Detecta RSA &lt; 2048, SHA-1/MD5, TLS sem verificação, segredos hardcoded e cifras quebradas, com orientação para migração pós-quântica. Saída em texto, JSON, SARIF, Markdown e CSV, pronto para CI.</p>
+        <div class="chips"><span class="chip">Python</span><span class="chip">AST</span><span class="chip">SARIF</span><span class="chip">Streamlit</span></div>
+        <a class="repo" href="https://github.com/EduardoMartins-Dev/quantum-safe-scanner" target="_blank" rel="noopener">Ver repositório →</a>
+      </article>
+
+      <article class="project">
+        <h3>Ambiente Check</h3>
+        <div class="sub">Auditoria de ambiente para implantações de ERP</div>
+        <p>Script PowerShell que valida SO, CPU, RAM, disco, .NET, Firebird, conectividade e latência, e gera um relatório pronto para chamados de infraestrutura.</p>
+        <div class="chips"><span class="chip">PowerShell</span><span class="chip">Auditoria</span><span class="chip">Deploy</span></div>
+        <a class="repo" href="https://github.com/EduardoMartins-Dev/ambiente-check" target="_blank" rel="noopener">Ver repositório →</a>
+      </article>
+
+      <article class="project">
+        <h3>Quantum Circuit Simulator</h3>
+        <div class="sub">Simulador de circuitos quânticos</div>
+        <p>Simulador em Python com vetor de estado em NumPy: portas Hadamard, Pauli, Phase, CNOT e medição. Interface web em Streamlit e CLI.</p>
+        <div class="chips"><span class="chip">Python</span><span class="chip">NumPy</span><span class="chip">Streamlit</span></div>
+        <a class="repo" href="https://github.com/EduardoMartins-Dev/Quantum-Simulator" target="_blank" rel="noopener">Ver repositório →</a>
+      </article>
+    </div>
+  </section>
+
+  <section id="competencias">
+    <h2>Competências</h2>
+    <div class="skills">
+      <div>
+        <h3>Infraestrutura</h3>
+        <div class="chips"><span class="chip">Windows Server</span><span class="chip">Active Directory</span><span class="chip">Intune</span><span class="chip">PXE</span><span class="chip">Linux</span><span class="chip">Docker</span><span class="chip">Azure</span></div>
+      </div>
+      <div>
+        <h3>Monitoramento</h3>
+        <div class="chips"><span class="chip">Zabbix</span><span class="chip">Grafana</span><span class="chip">InfluxDB</span><span class="chip">Prometheus</span><span class="chip">Microsoft Sentinel</span><span class="chip">SNMP</span></div>
+      </div>
+      <div>
+        <h3>Segurança</h3>
+        <div class="chips"><span class="chip">IAM</span><span class="chip">Resposta a incidentes</span><span class="chip">Hardening</span><span class="chip">Wireshark</span><span class="chip">Nmap</span><span class="chip">Metasploit</span><span class="chip">MITRE ATT&amp;CK</span></div>
+      </div>
+      <div>
+        <h3>Automação e código</h3>
+        <div class="chips"><span class="chip">PowerShell</span><span class="chip">Bash</span><span class="chip">Python</span><span class="chip">C</span><span class="chip">SQL</span><span class="chip">Azure DevOps</span><span class="chip">GitHub Actions</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ctf">
+    <h2>CTF</h2>
+    <div class="ctf">
+      <div>
+        <div class="rank">#204 <small>/ 855</small></div>
+        <div class="meta">NahamCon CTF 2025 · equipe N00bye · 300 pts · top 24%</div>
+      </div>
+      <div>
+        <p style="margin:0">Write-up do desafio de engenharia reversa <b>rev_flagcasino</b>: análise no GDB, manipulação de registradores e brute-force da seed do <code>rand()</code> da libc com Python ctypes.</p>
+        <div class="shots">
+          <a href="img/ctf/gdb.jpeg" target="_blank" rel="noopener"><img src="img/ctf/gdb.jpeg" alt="Sessão GDB"></a>
+          <a href="img/ctf/solver.jpeg" target="_blank" rel="noopener"><img src="img/ctf/solver.jpeg" alt="Script solver"></a>
+          <a href="img/ctf/flag.jpeg" target="_blank" rel="noopener"><img src="img/ctf/flag.jpeg" alt="Flag capturada"></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contato">
+    <h2>Contato</h2>
+    <p class="lead" style="margin-bottom:16px">Aberto a oportunidades em infraestrutura, redes e segurança.</p>
+    <div class="contact-list">
+      <a href="mailto:eduardo.dev.barbosa@gmail.com">eduardo.dev.barbosa@gmail.com</a>
+      <a href="https://linkedin.com/in/eduardo-martins3" target="_blank" rel="noopener">linkedin.com/in/eduardo-martins3</a>
+      <a href="https://github.com/EduardoMartins-Dev" target="_blank" rel="noopener">github.com/EduardoMartins-Dev</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">© 2026 Eduardo Martins Barbosa</div>
+</footer>
+
 </body>
 </html>
